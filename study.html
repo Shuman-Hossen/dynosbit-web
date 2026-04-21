@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynosbit Study | Pro Learning Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; overflow-x: hidden; }
+        .header-fixed { position: sticky; top: 0; z-index: 100; background: white; }
+        
+        /* Standard Top Nav Layout (As per your Screenshot) */
+        .top-nav { height: 70px; border-bottom: 1px solid #ddd; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; gap: 15px; }
+        
+        /* Black Sub-Bar (PLC, Sensors - Area 2) */
+        .sub-nav { height: 50px; background: #282a35; color: white; display: flex; align-items: center; overflow-x: auto; white-space: nowrap; border-bottom: 1px solid #444; }
+        
+        /* Subject Buttons Style (Top White Bar) */
+        .subject-btn { padding: 8px 16px; font-size: 13px; font-weight: 700; border-radius: 6px; cursor: pointer; text-transform: uppercase; color: #333; transition: 0.2s; }
+        .subject-btn:hover { background: #f3f4f6; color: #1dbf73; }
+        .active-sub { background: #f3f4f6; color: #1dbf73; border: 1px solid #e5e7eb; }
+        
+        /* Topic Buttons Style (Black Bar) */
+        .topic-btn { padding: 0 20px; height: 100%; display: flex; align-items: center; font-size: 12px; font-weight: 600; cursor: pointer; border-right: 1px solid #444; text-transform: uppercase; color: #ccc; }
+        .topic-btn:hover, .active-topic { background: #1dbf73; color: white; }
+
+        .w3-sidebar { width: 260px; background: #f9f9f9; height: calc(100vh - 120px); position: fixed; top: 120px; overflow-y: auto; border-right: 1px solid #ddd; }
+        .w3-main { margin-left: 260px; padding: 40px; min-height: 100vh; }
+        
+        .lesson-link { padding: 12px 20px; display: block; font-size: 14px; border-bottom: 1px solid #eee; cursor: pointer; color: #555; }
+        .active-lesson { background: #e7f9f0 !important; color: #1dbf73 !important; border-left: 4px solid #1dbf73; font-weight: 600; }
+
+        .editor-bar { display: flex; flex-wrap: wrap; gap: 5px; background: #f8f9fa; padding: 10px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 20px; position: sticky; top: 130px; z-index: 50; }
+        #context-menu { position: fixed; background: white; border: 1px solid #ddd; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: none; z-index: 1000; border-radius: 8px; }
+        
+        @media print { .w3-sidebar, .header-fixed, .editor-bar, .admin-only, .nav-buttons { display: none !important; } .w3-main { margin-left: 0 !important; width: 100% !important; padding: 0 !important; } }
+    </style>
+</head>
+<body class="bg-white">
+
+    <div class="header-fixed">
+        <nav class="top-nav">
+            <div class="flex items-center gap-2 shrink-0">
+                <div class="w-10 h-10 bg-[#04AA6D] rounded-lg flex items-center justify-center text-white font-bold text-2xl">D</div>
+                <span class="text-xl font-black tracking-tighter uppercase hidden md:block">DYNOSBIT<span class="text-[#04AA6D]">_STUDY</span></span>
+            </div>
+
+            <div class="flex items-center gap-1 overflow-x-auto no-scrollbar" id="subject-bar">
+                </div>
+
+            <div class="flex-grow max-w-sm lg:max-w-md mx-4">
+                <div class="relative">
+                    <input type="text" onkeyup="globalSearch(this.value)" placeholder="Search tutorials..." class="w-full bg-gray-50 border border-gray-200 px-5 py-2 rounded-full text-sm outline-none focus:bg-white focus:border-[#04AA6D] transition-all">
+                    <span class="absolute right-4 top-2.5 text-gray-300">🔍</span>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3 shrink-0">
+                <button id="loginBtn" onclick="toggleLoginModal()" class="bg-[#04AA6D] text-white px-6 py-2 rounded-lg font-bold text-sm hover:shadow-md transition">Sign In</button>
+                <button id="logoutBtn" onclick="logout()" class="hidden bg-red-500 text-white px-6 py-2 rounded-lg font-bold text-sm">Logout</button>
+            </div>
+        </nav>
+
+        <div class="sub-nav px-4" id="topic-bar">
+            </div>
+    </div>
+
+    <aside class="w3-sidebar">
+        <div class="p-5 border-b flex justify-between items-center">
+            <h3 class="font-bold text-slate-400 text-[10px] uppercase tracking-widest">Lessons</h3>
+            <button onclick="toggleOptionsMenu()" class="text-slate-400 hover:text-slate-900 admin-only hidden font-bold text-xl">⋮</button>
+            <div id="optionsMenu" class="hidden absolute right-4 mt-24 bg-white border shadow-xl rounded-lg w-44 z-50">
+                <button onclick="saveCurrentData()" class="w-full text-left p-3 hover:bg-slate-100 font-bold text-xs border-b">💾 Save Content</button>
+                <button onclick="window.print()" class="w-full text-left p-3 hover:bg-slate-100 font-bold text-xs">🖨️ Print to PDF</button>
+            </div>
+        </div>
+        <div id="lesson-list"></div>
+        <button onclick="addLesson()" class="admin-only hidden w-full p-4 text-green-600 font-bold hover:bg-green-50 border-t border-dashed">+ Add New Part</button>
+    </aside>
+
+    <main class="w3-main">
+        <div class="max-w-5xl mx-auto">
+            <div id="editor-toolbar" class="admin-only hidden editor-bar shadow-sm">
+                <button onclick="exec('bold')"><b>B</b></button>
+                <button onclick="exec('italic')"><i>I</i></button>
+                <button onclick="exec('underline')"><u>U</u></button>
+                <input type="color" onchange="exec('foreColor', this.value)" class="w-6 h-6 border-none">
+                <button onclick="addTable()">📊 Table</button>
+                <button onclick="addImg()">🖼️ Image</button>
+                <button onclick="exec('insertUnorderedList')">• List</button>
+                <button onclick="exec('justifyCenter')">Center</button>
+                <button onclick="saveCurrentData()" class="ml-auto bg-blue-600 text-white px-4 rounded font-bold hover:bg-blue-700">Save Changes</button>
+            </div>
+
+            <h1 id="content-title" class="text-4xl font-black mb-6 outline-none" contenteditable="false">Welcome to Dynosbit</h1>
+            <div id="content-body" class="prose max-w-none text-slate-700 min-h-[500px] outline-none" contenteditable="false">
+                Select a subject and topic from the bars above to begin your study.
+            </div>
+
+            <div class="nav-buttons flex justify-between mt-20 pt-10 border-t">
+                <button onclick="nav(-1)" class="bg-gray-100 hover:bg-gray-200 px-8 py-3 rounded-xl font-bold transition text-gray-600">← Previous</button>
+                <button onclick="nav(1)" class="bg-[#04AA6D] hover:bg-[#038d5a] text-white px-10 py-3 rounded-xl font-bold transition shadow-lg shadow-green-100">Next Lesson →</button>
+            </div>
+        </div>
+    </main>
+
+    <div id="context-menu">
+        <button onclick="deleteCurrentItem()" class="w-full text-left px-6 py-3 text-red-600 font-bold hover:bg-red-50 rounded-lg text-sm">Delete Current Button</button>
+    </div>
+
+    <div id="loginModal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-[200]">
+        <div class="bg-white p-10 rounded-[2.5rem] w-80 shadow-2xl">
+            <h2 class="text-2xl font-black mb-6 tracking-tighter">Admin Login</h2>
+            <input type="password" id="adminPass" placeholder="Enter Password" class="w-full p-3 border rounded-xl mb-4 outline-none focus:border-[#04AA6D]">
+            <button onclick="handleLogin()" class="w-full bg-[#04AA6D] text-white py-3 rounded-xl font-bold hover:bg-[#038d5a] transition">Login</button>
+            <button onclick="toggleLoginModal()" class="w-full mt-3 text-slate-400 text-sm">Cancel</button>
+        </div>
+    </div>
+
+    <script>
+        let isAdmin = false;
+        let activeSub = 'Electrical';
+        let activeTopic = '';
+        let activeLessonIdx = 0;
+        let rightClickTarget = { type: '', name: '' };
+
+        // Triple Layer Database Structure
+        let db = JSON.parse(localStorage.getItem('dynos_pro_master_v1')) || {
+            Electrical: { "Transformers": [{t:"Working Principle", b:"V1/V2 = N1/N2"}] },
+            Automation: { "PLC": [{t:"LAD Logic", b:"Basic ladder diagrams"}] },
+            Safety: { "General Safety": [{t:"Introduction", b:"Safety first."}] },
+            English: { "Grammar": [{t:"Tense", b:"Present, Past, Future"}] }
+        };
+
+        function init() {
+            renderSubjects();
+            loadSubject(activeSub);
+        }
+
+        function renderSubjects() {
+            const bar = document.getElementById('subject-bar');
+            bar.innerHTML = Object.keys(db).map(s => `
+                <button class="subject-btn ${activeSub === s ? 'active-sub' : ''}" 
+                        onclick="loadSubject('${s}')" 
+                        oncontextmenu="showMenu(event, 'sub', '${s}')">${s}</button>
+            `).join('') + `<button class="admin-only hidden px-2 text-green-600 font-bold text-xl" onclick="addSubject()">+</button>`;
+        }
+
+        function loadSubject(s) {
+            activeSub = s;
+            const topics = Object.keys(db[s]);
+            renderTopics(topics);
+            loadTopic(topics[0]);
+            renderSubjects();
+        }
+
+        function renderTopics(topics) {
+            const bar = document.getElementById('topic-bar');
+            bar.innerHTML = topics.map(t => `
+                <div class="topic-btn ${activeTopic === t ? 'active-topic' : ''}" 
+                     onclick="loadTopic('${t}')" 
+                     oncontextmenu="showMenu(event, 'topic', '${t}')">${t}</div>
+            `).join('') + `<div class="admin-only hidden px-4 text-green-400 font-bold cursor-pointer" onclick="addTopic()">+</div>`;
+        }
+
+        function loadTopic(t) {
+            activeTopic = t;
+            activeLessonIdx = 0;
+            renderLessons();
+            loadLesson(0);
+            renderTopics(Object.keys(db[activeSub]));
+        }
+
+        function renderLessons() {
+            const list = document.getElementById('lesson-list');
+            const lessons = db[activeSub][activeTopic] || [];
+            list.innerHTML = lessons.map((l, i) => `
+                <a onclick="loadLesson(${i})" class="lesson-link ${activeLessonIdx === i ? 'active-lesson' : ''}">${l.t}</a>
+            `).join('');
+        }
+
+        function loadLesson(i) {
+            activeLessonIdx = i;
+            const lesson = db[activeSub][activeTopic][i];
+            if(!lesson) return;
+            document.getElementById('content-title').innerHTML = lesson.t;
+            document.getElementById('content-body').innerHTML = lesson.b;
+            renderLessons();
+            MathJax.typesetPromise();
+        }
+
+        // --- ADMIN & LOGIC ---
+        function handleLogin() {
+            if(document.getElementById('adminPass').value === "shuman2026") {
+                isAdmin = true;
+                document.querySelectorAll('.admin-only').forEach(e => e.classList.remove('hidden'));
+                document.getElementById('content-title').contentEditable = true;
+                document.getElementById('content-body').contentEditable = true;
+                document.getElementById('loginBtn').classList.add('hidden');
+                document.getElementById('logoutBtn').classList.remove('hidden');
+                toggleLoginModal();
+                init();
+            } else { alert("Wrong Password!"); }
+        }
+
+        function addSubject() {
+            let n = prompt("New Subject Name (e.g., ELECTRONICS):");
+            if(n) { db[n] = { "General": [{t:"Introduction", b:"..."}] }; saveDB(); init(); }
+        }
+
+        function addTopic() {
+            let n = prompt("New Topic Name (e.g., SENSORS):");
+            if(n) { db[activeSub][n] = [{t:"Introduction", b:"..."}]; saveDB(); loadSubject(activeSub); }
+        }
+
+        function addLesson() {
+            db[activeSub][activeTopic].push({t:"New Lesson Part", b:"Write content here..."});
+            saveDB(); renderLessons(); loadLesson(db[activeSub][activeTopic].length - 1);
+        }
+
+        function saveCurrentData() {
+            db[activeSub][activeTopic][activeLessonIdx].t = document.getElementById('content-title').innerHTML;
+            db[activeSub][activeTopic][activeLessonIdx].b = document.getElementById('content-body').innerHTML;
+            saveDB();
+            alert("Content Saved!");
+        }
+
+        function saveDB() { localStorage.setItem('dynos_pro_master_v1', JSON.stringify(db)); }
+
+        function showMenu(e, type, name) {
+            if(!isAdmin) return;
+            e.preventDefault();
+            rightClickTarget = { type, name };
+            const menu = document.getElementById('context-menu');
+            menu.style.display = 'block';
+            menu.style.left = e.pageX + 'px';
+            menu.style.top = e.pageY + 'px';
+        }
+
+        function deleteCurrentItem() {
+            if(confirm(`Are you sure you want to delete ${rightClickTarget.name}?`)) {
+                if(rightClickTarget.type === 'sub') delete db[rightClickTarget.name];
+                else delete db[activeSub][rightClickTarget.name];
+                saveDB(); init();
+            }
+        }
+
+        function addTable() {
+            let r = prompt("Rows:", "3"), c = prompt("Columns:", "3");
+            let t = `<table border="1" style="width:100%; border-collapse: collapse; margin: 20px 0;">`;
+            for(let i=0; i<r; i++) {
+                t += "<tr>";
+                for(let j=0; j<c; j++) t += `<td style="border: 1px solid #ddd; padding: 10px;">Cell</td>`;
+                t += "</tr>";
+            }
+            t += "</table><p>&nbsp;</p>";
+            exec('insertHTML', t);
+        }
+
+        function addImg() { const u = prompt("Image URL:"); if(u) exec('insertImage', u); }
+        window.onclick = () => document.getElementById('context-menu').style.display = 'none';
+        function exec(c, v=null) { document.execCommand(c, false, v); }
+        function logout() { location.reload(); }
+        function toggleLoginModal() { document.getElementById('loginModal').classList.toggle('hidden'); }
+        function toggleOptionsMenu() { document.getElementById('optionsMenu').classList.toggle('hidden'); }
+        function nav(step) {
+            let next = activeLessonIdx + step;
+            if(next >= 0 && next < db[activeSub][activeTopic].length) loadLesson(next);
+        }
+
+        init();
+    </script>
+</body>
+</html>
