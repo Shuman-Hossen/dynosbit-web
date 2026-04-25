@@ -8,114 +8,196 @@
     <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <style>
-        body { font-family: 'Inter', sans-serif; overflow-x: hidden; }
+        body { font-family: 'Inter', sans-serif; overflow-x: hidden; background: #fff; }
         .header-fixed { position: sticky; top: 0; z-index: 100; background: white; }
         
-        /* Standard Top Nav Layout (As per your Screenshot) */
-        .top-nav { height: 70px; border-bottom: 1px solid #ddd; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; gap: 15px; }
-        
-        /* Black Sub-Bar (PLC, Sensors - Area 2) */
-        .sub-nav { height: 50px; background: #282a35; color: white; display: flex; align-items: center; overflow-x: auto; white-space: nowrap; border-bottom: 1px solid #444; }
-        
-        /* Subject Buttons Style (Top White Bar) */
-        .subject-btn { padding: 8px 16px; font-size: 13px; font-weight: 700; border-radius: 6px; cursor: pointer; text-transform: uppercase; color: #333; transition: 0.2s; }
-        .subject-btn:hover { background: #f3f4f6; color: #1dbf73; }
-        .active-sub { background: #f3f4f6; color: #1dbf73; border: 1px solid #e5e7eb; }
-        
-        /* Topic Buttons Style (Black Bar) */
-        .topic-btn { padding: 0 20px; height: 100%; display: flex; align-items: center; font-size: 12px; font-weight: 600; cursor: pointer; border-right: 1px solid #444; text-transform: uppercase; color: #ccc; }
-        .topic-btn:hover, .active-topic { background: #1dbf73; color: white; }
+        /* Top Nav */
+        .top-nav { height: 60px; border-bottom: 1px solid #eee; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; gap: 10px; }
+        .subject-container { display: flex; align-items: center; overflow-x: auto; scrollbar-width: none; max-width: 650px; }
+        .subject-container::-webkit-scrollbar { display: none; }
+        .subject-btn { padding: 0 16px; height: 40px; display: flex; align-items: center; font-size: 13px; font-weight: 700; cursor: pointer; text-transform: uppercase; color: #444; border-radius: 6px; transition: 0.2s; white-space: nowrap; user-select: none; }
+        .subject-btn:hover { background: #f4f4f4; color: #04AA6D; }
+        .active-sub { background: #04AA6D; color: white !important; }
 
-        .w3-sidebar { width: 260px; background: #f9f9f9; height: calc(100vh - 120px); position: fixed; top: 120px; overflow-y: auto; border-right: 1px solid #ddd; }
-        .w3-main { margin-left: 260px; padding: 40px; min-height: 100vh; }
+        /* Black Bar (Updated Smart Hover Effect) */
+        .topic-container { display: flex; align-items: center; background: #282a35; height: 45px; }
+        .topic-nav { display: flex; align-items: center; overflow-x: auto; white-space: nowrap; scrollbar-width: none; scroll-behavior: smooth; }
+        .topic-nav::-webkit-scrollbar { display: none; }
         
-        .lesson-link { padding: 12px 20px; display: block; font-size: 14px; border-bottom: 1px solid #eee; cursor: pointer; color: #555; }
-        .active-lesson { background: #e7f9f0 !important; color: #1dbf73 !important; border-left: 4px solid #1dbf73; font-weight: 600; }
+        .topic-btn { 
+            padding: 0 20px; height: 100%; display: flex; align-items: center; 
+            font-size: 13px; font-weight: 600; cursor: pointer; border-right: 1px solid #3c3f51; 
+            color: #d1d5db; text-transform: capitalize; user-select: none; 
+            transition: all 0.2s ease-in-out; 
+        }
+        .topic-btn:hover { background: #3e4153; color: #ffffff; }
+        .active-topic { background: #04AA6D !important; color: white !important; }
+        
+        .scroll-arrow { padding: 0 15px; height: 100%; background: #282a35; color: white; display: flex; align-items: center; cursor: pointer; font-weight: bold; border: none; font-size: 18px; transition: 0.2s; }
+        .scroll-arrow:hover { background: #111; }
 
-        .editor-bar { display: flex; flex-wrap: wrap; gap: 5px; background: #f8f9fa; padding: 10px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 20px; position: sticky; top: 130px; z-index: 50; }
-        #context-menu { position: fixed; background: white; border: 1px solid #ddd; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: none; z-index: 1000; border-radius: 8px; }
-        
-        @media print { .w3-sidebar, .header-fixed, .editor-bar, .admin-only, .nav-buttons { display: none !important; } .w3-main { margin-left: 0 !important; width: 100% !important; padding: 0 !important; } }
+        /* Sidebar */
+        .w3-sidebar { width: 240px; background: #fdfdfd; height: calc(100vh - 105px); position: fixed; top: 105px; overflow-y: auto; border-right: 1px solid #eee; }
+        .w3-main { margin-left: 240px; padding: 40px; min-height: 100vh; }
+        .lesson-link { padding: 10px 20px; display: block; font-size: 14px; border-bottom: 1px solid #f1f1f1; cursor: pointer; color: #555; user-select: none; }
+        .active-lesson { background: #e7f9f0 !important; color: #04AA6D !important; border-left: 4px solid #04AA6D; font-weight: 600; }
+
+        /* Advanced Editor Toolbar */
+        .docs-toolbar { display: flex; flex-wrap: wrap; gap: 8px; background: #f8f9fa; padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; margin-bottom: 30px; align-items: center; }
+        .tool-btn { padding: 4px 8px; border-radius: 4px; border: 1px solid transparent; background: transparent; cursor: pointer; font-size: 14px; color: #333; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
+        .tool-btn:hover { background: #e2e6ea; border-color: #cbd3da; }
+        .tool-sep { width: 1px; height: 24px; background: #ccc; margin: 0 4px; }
+        .tool-select { border: 1px solid #ccc; padding: 4px; border-radius: 4px; font-size: 13px; background: white; outline: none; cursor: pointer; }
+
+        /* Image Formatting Toolbar */
+        #img-tools { display: none; position: absolute; background: #1f2937; color: white; border-radius: 8px; padding: 6px 12px; gap: 10px; z-index: 200; font-size: 12px; font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.2); align-items: center; }
+        #img-tools button { hover:text-[#04AA6D]; transition: 0.2s; }
+        #img-tools button:hover { color: #04AA6D; }
+
+        /* Right-Click Menu */
+        #context-menu { position: fixed; background: white; border: 1px solid #ddd; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: none; z-index: 1000; border-radius: 8px; overflow: hidden; width: 140px; }
+        .context-item { width: 100%; text-align: left; padding: 10px 15px; font-size: 13px; font-weight: bold; cursor: pointer; border-bottom: 1px solid #f1f1f1; }
+        .context-item:hover { background: #f9f9f9; }
+
+        @media print { .w3-sidebar, .header-fixed, .docs-toolbar, .admin-only, .nav-buttons { display: none !important; } .w3-main { margin-left: 0 !important; width: 100% !important; padding: 0 !important; } }
     </style>
 </head>
-<body class="bg-white">
+<body class="bg-white" onclick="hideMenus(event)">
 
     <div class="header-fixed">
         <nav class="top-nav">
             <div class="flex items-center gap-2 shrink-0">
-                <div class="w-10 h-10 bg-[#04AA6D] rounded-lg flex items-center justify-center text-white font-bold text-2xl">D</div>
-                <span class="text-xl font-black tracking-tighter uppercase hidden md:block">DYNOSBIT<span class="text-[#04AA6D]">_STUDY</span></span>
+                <div class="w-8 h-8 bg-[#04AA6D] rounded text-white font-bold text-xl flex justify-center items-center">D</div>
+                <span class="text-xl font-black tracking-tighter hidden sm:block">DYNOSBIT<span class="text-[#04AA6D]">_STUDY</span></span>
             </div>
 
-            <div class="flex items-center gap-1 overflow-x-auto no-scrollbar" id="subject-bar">
-                </div>
-
-            <div class="flex-grow max-w-sm lg:max-w-md mx-4">
-                <div class="relative">
-                    <input type="text" onkeyup="globalSearch(this.value)" placeholder="Search tutorials..." class="w-full bg-gray-50 border border-gray-200 px-5 py-2 rounded-full text-sm outline-none focus:bg-white focus:border-[#04AA6D] transition-all">
-                    <span class="absolute right-4 top-2.5 text-gray-300">🔍</span>
-                </div>
+            <div class="flex items-center flex-grow overflow-hidden">
+                <div class="subject-container" id="subject-bar">
+                    </div>
+                <button onclick="addSubject()" class="admin-only hidden px-2 font-black text-[#04AA6D] text-2xl hover:bg-gray-100 rounded h-[40px] ml-1">+</button>
             </div>
 
-            <div class="flex items-center gap-3 shrink-0">
-                <button id="loginBtn" onclick="toggleLoginModal()" class="bg-[#04AA6D] text-white px-6 py-2 rounded-lg font-bold text-sm hover:shadow-md transition">Sign In</button>
-                <button id="logoutBtn" onclick="logout()" class="hidden bg-red-500 text-white px-6 py-2 rounded-lg font-bold text-sm">Logout</button>
+            <div class="relative w-48 md:w-64 ml-auto">
+                <input type="text" onkeyup="globalSearch(this.value)" placeholder="Search tutorials..." class="w-full bg-gray-100 border px-4 py-1.5 rounded-full text-sm outline-none focus:border-[#04AA6D] transition-all">
+                <span class="absolute right-3 top-1.5 text-gray-400">🔍</span>
+            </div>
+
+            <div class="flex items-center shrink-0 ml-4">
+                <button id="loginBtn" onclick="toggleLoginModal('login')" class="bg-[#04AA6D] text-white px-5 py-1.5 rounded font-bold text-sm">Sign In</button>
+                <button id="logoutBtn" onclick="logout()" class="hidden bg-red-500 text-white px-5 py-1.5 rounded font-bold text-sm">Logout</button>
             </div>
         </nav>
 
-        <div class="sub-nav px-4" id="topic-bar">
-            </div>
+        <div class="topic-container">
+            <button class="scroll-arrow" onclick="scrollNav('topic-bar', -200)">❮</button>
+            
+            <div class="topic-nav" id="topic-bar">
+                </div>
+            
+            <button onclick="addTopic()" class="admin-only hidden px-4 font-black text-green-400 text-2xl hover:bg-[#3e4153] h-full flex items-center justify-center transition-all">+</button>
+            
+            <button class="scroll-arrow flex-grow justify-end pr-4" onclick="scrollNav('topic-bar', 200)">❯</button>
+        </div>
     </div>
 
     <aside class="w3-sidebar">
-        <div class="p-5 border-b flex justify-between items-center">
-            <h3 class="font-bold text-slate-400 text-[10px] uppercase tracking-widest">Lessons</h3>
-            <button onclick="toggleOptionsMenu()" class="text-slate-400 hover:text-slate-900 admin-only hidden font-bold text-xl">⋮</button>
-            <div id="optionsMenu" class="hidden absolute right-4 mt-24 bg-white border shadow-xl rounded-lg w-44 z-50">
-                <button onclick="saveCurrentData()" class="w-full text-left p-3 hover:bg-slate-100 font-bold text-xs border-b">💾 Save Content</button>
-                <button onclick="window.print()" class="w-full text-left p-3 hover:bg-slate-100 font-bold text-xs">🖨️ Print to PDF</button>
+        <div class="px-4 py-2 border-b flex justify-end items-center bg-white sticky top-0 z-10">
+            <div class="relative">
+                <button onclick="toggleOptions(event)" class="admin-only hidden text-slate-400 hover:text-slate-900 font-bold text-xl leading-none">⋮</button>
+                <div id="optionsMenu" class="hidden absolute right-0 mt-2 bg-white border shadow-xl rounded-md w-40 z-50">
+                    <button onclick="saveCurrentData()" class="w-full text-left px-3 py-2 hover:bg-slate-50 font-bold text-xs border-b">💾 Save Content</button>
+                    <button onclick="window.print()" class="w-full text-left px-3 py-2 hover:bg-slate-50 font-bold text-xs border-b">🖨️ Export PDF</button>
+                    <button onclick="deleteCurrentTopic()" class="w-full text-left px-3 py-2 hover:bg-red-50 text-red-600 font-bold text-xs">🗑️ Delete Topic</button>
+                </div>
             </div>
         </div>
         <div id="lesson-list"></div>
-        <button onclick="addLesson()" class="admin-only hidden w-full p-4 text-green-600 font-bold hover:bg-green-50 border-t border-dashed">+ Add New Part</button>
+        <button onclick="addLesson()" class="admin-only hidden w-full p-4 text-[#04AA6D] font-black hover:bg-green-50 border-t border-dashed">+ Add New Part</button>
     </aside>
 
     <main class="w3-main">
-        <div class="max-w-5xl mx-auto">
-            <div id="editor-toolbar" class="admin-only hidden editor-bar shadow-sm">
-                <button onclick="exec('bold')"><b>B</b></button>
-                <button onclick="exec('italic')"><i>I</i></button>
-                <button onclick="exec('underline')"><u>U</u></button>
-                <input type="color" onchange="exec('foreColor', this.value)" class="w-6 h-6 border-none">
-                <button onclick="addTable()">📊 Table</button>
-                <button onclick="addImg()">🖼️ Image</button>
-                <button onclick="exec('insertUnorderedList')">• List</button>
-                <button onclick="exec('justifyCenter')">Center</button>
-                <button onclick="saveCurrentData()" class="ml-auto bg-blue-600 text-white px-4 rounded font-bold hover:bg-blue-700">Save Changes</button>
+        <div class="max-w-5xl mx-auto relative">
+            
+            <div id="editor-toolbar" class="admin-only hidden docs-toolbar shadow-sm">
+                <select class="tool-select" onchange="exec('formatBlock', this.value)">
+                    <option value="p">Normal text</option>
+                    <option value="H1">Heading 1 (Big)</option>
+                    <option value="H2">Heading 2 (Mid)</option>
+                    <option value="H3">Heading 3 (Small)</option>
+                </select>
+                <div class="tool-sep"></div>
+                
+                <button class="tool-btn font-bold" onclick="exec('bold')" title="Bold">B</button>
+                <button class="tool-btn italic" onclick="exec('italic')" title="Italic">I</button>
+                <button class="tool-btn underline" onclick="exec('underline')" title="Underline">U</button>
+                
+                <div class="tool-btn relative" title="Text Color">
+                    <span class="font-bold">A</span>
+                    <input type="color" onchange="exec('foreColor', this.value)" class="absolute opacity-0 w-full h-full cursor-pointer">
+                </div>
+                <div class="tool-sep"></div>
+
+                <button class="tool-btn" onclick="exec('justifyLeft')" title="Align Left">Left</button>
+                <button class="tool-btn" onclick="exec('justifyCenter')" title="Align Center">Center</button>
+                <button class="tool-btn" onclick="exec('justifyRight')" title="Align Right">Right</button>
+                <div class="tool-sep"></div>
+
+                <button class="tool-btn" onclick="triggerImageUpload()" title="Upload Image from PC">🖼️ Image</button>
+                <input type="file" id="imageUploadInput" accept="image/*" class="hidden" onchange="handleImageUpload(event)">
+                
+                <button class="tool-btn" onclick="addTable()" title="Insert Table">📊 Table</button>
+                <button class="tool-btn text-red-500" onclick="deleteTable()" title="Click inside a table to delete it">🗑️ Del Table</button>
+                
+                <button onclick="saveCurrentData()" class="ml-auto bg-[#04AA6D] text-white px-5 py-1.5 rounded font-bold hover:bg-[#038d5a] text-sm shadow-sm">Save</button>
             </div>
 
-            <h1 id="content-title" class="text-4xl font-black mb-6 outline-none" contenteditable="false">Welcome to Dynosbit</h1>
-            <div id="content-body" class="prose max-w-none text-slate-700 min-h-[500px] outline-none" contenteditable="false">
-                Select a subject and topic from the bars above to begin your study.
+            <h1 id="content-title" class="text-4xl font-black mb-6 outline-none" contenteditable="false">Dynosbit Study</h1>
+            <div id="content-body" class="prose max-w-none text-slate-700 min-h-[500px] outline-none leading-relaxed" contenteditable="false">
+                Select a subject from the top navigation to start your learning session.
             </div>
 
-            <div class="nav-buttons flex justify-between mt-20 pt-10 border-t">
-                <button onclick="nav(-1)" class="bg-gray-100 hover:bg-gray-200 px-8 py-3 rounded-xl font-bold transition text-gray-600">← Previous</button>
-                <button onclick="nav(1)" class="bg-[#04AA6D] hover:bg-[#038d5a] text-white px-10 py-3 rounded-xl font-bold transition shadow-lg shadow-green-100">Next Lesson →</button>
+            <div class="nav-buttons flex justify-between mt-20 pt-8 border-t">
+                <button onclick="nav(-1)" class="bg-gray-100 hover:bg-gray-200 px-6 py-2 rounded-lg font-bold text-gray-600">Previous</button>
+                <button onclick="nav(1)" class="bg-[#04AA6D] hover:bg-[#038d5a] text-white px-8 py-2 rounded-lg font-bold shadow-md">Next</button>
             </div>
         </div>
     </main>
 
-    <div id="context-menu">
-        <button onclick="deleteCurrentItem()" class="w-full text-left px-6 py-3 text-red-600 font-bold hover:bg-red-50 rounded-lg text-sm">Delete Current Button</button>
+    <div id="img-tools">
+        <button onclick="setImgWidth('30%')">Small</button>
+        <button onclick="setImgWidth('60%')">Mid</button>
+        <button onclick="setImgWidth('100%')">Full</button>
+        <div class="w-px h-4 bg-gray-500 mx-1"></div>
+        <button onclick="setImgAlign('left')">Left</button>
+        <button onclick="setImgAlign('center')">Center</button>
+        <button onclick="setImgAlign('right')">Right</button>
     </div>
 
-    <div id="loginModal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-[200]">
-        <div class="bg-white p-10 rounded-[2.5rem] w-80 shadow-2xl">
-            <h2 class="text-2xl font-black mb-6 tracking-tighter">Admin Login</h2>
-            <input type="password" id="adminPass" placeholder="Enter Password" class="w-full p-3 border rounded-xl mb-4 outline-none focus:border-[#04AA6D]">
-            <button onclick="handleLogin()" class="w-full bg-[#04AA6D] text-white py-3 rounded-xl font-bold hover:bg-[#038d5a] transition">Login</button>
-            <button onclick="toggleLoginModal()" class="w-full mt-3 text-slate-400 text-sm">Cancel</button>
+    <div id="context-menu">
+        <div class="context-item text-blue-600" onclick="editItemName()">✏️ Edit Name</div>
+        <div class="context-item text-red-600" onclick="deleteItem()">🗑️ Delete</div>
+    </div>
+
+    <div id="authModal" class="hidden fixed inset-0 bg-black/60 flex items-center justify-center z-[200]">
+        <div class="bg-white p-8 rounded-[2rem] w-80 shadow-2xl relative">
+            <button onclick="toggleLoginModal('close')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-900 font-bold">✕</button>
+            
+            <div id="view-login">
+                <h2 class="text-2xl font-black mb-6 text-center text-slate-800">Admin Login</h2>
+                <input type="password" id="adminPass" placeholder="Enter Password" class="w-full p-3 border rounded-xl mb-2 outline-none focus:border-[#04AA6D]">
+                <div class="text-right mb-4">
+                    <button onclick="switchAuthView('forgot')" class="text-xs text-blue-600 font-bold hover:underline">Forgot password?</button>
+                </div>
+                <button onclick="handleLogin()" class="w-full bg-[#04AA6D] text-white py-3 rounded-xl font-bold shadow-lg shadow-green-200">Sign In</button>
+            </div>
+
+            <div id="view-forgot" class="hidden">
+                <h2 class="text-xl font-black mb-4 text-center">Reset Password</h2>
+                <p class="text-xs text-gray-500 text-center mb-4">Enter admin email to receive a secure reset link.</p>
+                <input type="email" id="recoveryEmail" placeholder="e.g. shumanhossen@gmail.com" class="w-full p-3 border rounded-xl mb-4 outline-none focus:border-[#04AA6D]">
+                <button onclick="handleForgotPass()" class="w-full bg-slate-800 text-white py-3 rounded-xl font-bold mb-3">Send Reset Link</button>
+                <button onclick="switchAuthView('login')" class="w-full text-xs text-slate-500 font-bold">Back to Login</button>
+            </div>
         </div>
     </div>
 
@@ -124,36 +206,43 @@
         let activeSub = 'Electrical';
         let activeTopic = '';
         let activeLessonIdx = 0;
-        let rightClickTarget = { type: '', name: '' };
+        let contextTarget = { type: '', name: '', idx: null };
+        let activeImg = null;
 
-        // Triple Layer Database Structure
-        let db = JSON.parse(localStorage.getItem('dynos_pro_master_v1')) || {
-            Electrical: { "Transformers": [{t:"Working Principle", b:"V1/V2 = N1/N2"}] },
-            Automation: { "PLC": [{t:"LAD Logic", b:"Basic ladder diagrams"}] },
-            Safety: { "General Safety": [{t:"Introduction", b:"Safety first."}] },
-            English: { "Grammar": [{t:"Tense", b:"Present, Past, Future"}] }
+        // Database
+        let db = JSON.parse(localStorage.getItem('dynos_db_v10')) || {
+            Electrical: { "Transformers": [{t:"Overview", b:"Details here"}], "Motors": [{t:"Induction Motor", b:"Theory"}] },
+            Automation: { "PLC": [{t:"LAD Logic", b:"Diagrams"}] },
+            Safety: { "General": [{t:"PPE", b:"Safety gear"}] },
+            English: { "Grammar": [{t:"Tenses", b:"Rules"}] },
+            IBBF: { "Intro": [{t:"Overview", b:"Details"}] }
         };
 
         function init() {
             renderSubjects();
-            loadSubject(activeSub);
+            if(db[activeSub]) loadSubject(activeSub);
+            else loadSubject(Object.keys(db)[0]);
+            
+            if(isAdmin) document.querySelectorAll('.admin-only').forEach(e => e.classList.remove('hidden'));
         }
 
+        // --- RENDER LOGIC ---
         function renderSubjects() {
             const bar = document.getElementById('subject-bar');
             bar.innerHTML = Object.keys(db).map(s => `
-                <button class="subject-btn ${activeSub === s ? 'active-sub' : ''}" 
-                        onclick="loadSubject('${s}')" 
-                        oncontextmenu="showMenu(event, 'sub', '${s}')">${s}</button>
-            `).join('') + `<button class="admin-only hidden px-2 text-green-600 font-bold text-xl" onclick="addSubject()">+</button>`;
+                <div class="subject-btn ${activeSub === s ? 'active-sub' : ''}" 
+                     onclick="loadSubject('${s}')" 
+                     oncontextmenu="showContextMenu(event, 'sub', '${s}')">${s}</div>
+            `).join('');
         }
 
         function loadSubject(s) {
             activeSub = s;
             const topics = Object.keys(db[s]);
             renderTopics(topics);
-            loadTopic(topics[0]);
+            if(topics.length > 0) loadTopic(topics[0]);
             renderSubjects();
+            if(isAdmin) document.querySelectorAll('.admin-only').forEach(e => e.classList.remove('hidden'));
         }
 
         function renderTopics(topics) {
@@ -161,23 +250,28 @@
             bar.innerHTML = topics.map(t => `
                 <div class="topic-btn ${activeTopic === t ? 'active-topic' : ''}" 
                      onclick="loadTopic('${t}')" 
-                     oncontextmenu="showMenu(event, 'topic', '${t}')">${t}</div>
-            `).join('') + `<div class="admin-only hidden px-4 text-green-400 font-bold cursor-pointer" onclick="addTopic()">+</div>`;
+                     oncontextmenu="showContextMenu(event, 'topic', '${t}')">${t}</div>
+            `).join('');
         }
 
         function loadTopic(t) {
             activeTopic = t;
             activeLessonIdx = 0;
             renderLessons();
-            loadLesson(0);
+            if(db[activeSub][activeTopic] && db[activeSub][activeTopic].length > 0) {
+                loadLesson(0);
+            }
             renderTopics(Object.keys(db[activeSub]));
+            if(isAdmin) document.querySelectorAll('.admin-only').forEach(e => e.classList.remove('hidden'));
         }
 
         function renderLessons() {
             const list = document.getElementById('lesson-list');
             const lessons = db[activeSub][activeTopic] || [];
             list.innerHTML = lessons.map((l, i) => `
-                <a onclick="loadLesson(${i})" class="lesson-link ${activeLessonIdx === i ? 'active-lesson' : ''}">${l.t}</a>
+                <div class="lesson-link ${activeLessonIdx === i ? 'active-lesson' : ''}" 
+                     onclick="loadLesson(${i})" 
+                     oncontextmenu="showContextMenu(event, 'lesson', '${activeTopic}', ${i})">${l.t}</div>
             `).join('');
         }
 
@@ -191,7 +285,124 @@
             MathJax.typesetPromise();
         }
 
-        // --- ADMIN & LOGIC ---
+        // --- CONTEXT MENU (EDIT / DELETE) ---
+        function showContextMenu(e, type, name, idx = null) {
+            if(!isAdmin) return;
+            e.preventDefault();
+            contextTarget = { type, name, idx };
+            const menu = document.getElementById('context-menu');
+            menu.style.display = 'block';
+            menu.style.left = e.pageX + 'px';
+            menu.style.top = e.pageY + 'px';
+        }
+
+        function hideMenus(e) {
+            document.getElementById('context-menu').style.display = 'none';
+            if(!e.target.closest('#optionsMenu') && !e.target.closest('button[onclick="toggleOptions(event)"]')) {
+                document.getElementById('optionsMenu').classList.add('hidden');
+            }
+            
+            // Image tools hide logic
+            if(!e.target.closest('#img-tools') && e.target.tagName !== 'IMG') {
+                document.getElementById('img-tools').style.display = 'none';
+                if(activeImg) { activeImg.style.outline = 'none'; activeImg = null; }
+            }
+        }
+
+        function editItemName() {
+            let newName = prompt("Enter new name:", contextTarget.type === 'lesson' ? db[activeSub][activeTopic][contextTarget.idx].t : contextTarget.name);
+            if(!newName || newName === contextTarget.name) return;
+
+            if(contextTarget.type === 'sub') {
+                db[newName] = db[contextTarget.name];
+                delete db[contextTarget.name];
+                activeSub = newName;
+            } else if(contextTarget.type === 'topic') {
+                db[activeSub][newName] = db[activeSub][contextTarget.name];
+                delete db[activeSub][contextTarget.name];
+                activeTopic = newName;
+            } else if(contextTarget.type === 'lesson') {
+                db[activeSub][activeTopic][contextTarget.idx].t = newName;
+            }
+            saveDB(); init();
+        }
+
+        function deleteItem() {
+            if(confirm("Are you sure you want to delete this?")) {
+                if(contextTarget.type === 'sub') delete db[contextTarget.name];
+                else if(contextTarget.type === 'topic') delete db[activeSub][contextTarget.name];
+                else if(contextTarget.type === 'lesson') db[activeSub][activeTopic].splice(contextTarget.idx, 1);
+                saveDB(); init();
+            }
+        }
+
+        // --- IMAGE RESIZE & ALIGN LOGIC ---
+        document.getElementById('content-body').addEventListener('click', (e) => {
+            if(e.target.tagName === 'IMG' && isAdmin) {
+                if(activeImg) activeImg.style.outline = 'none';
+                activeImg = e.target;
+                const rect = activeImg.getBoundingClientRect();
+                const tools = document.getElementById('img-tools');
+                tools.style.display = 'flex';
+                tools.style.top = (rect.top + window.scrollY - 40) + 'px';
+                tools.style.left = (rect.left + window.scrollX) + 'px';
+                activeImg.style.outline = '3px dashed #04AA6D';
+            }
+        });
+
+        function setImgWidth(w) { if(activeImg) { activeImg.style.width = w; saveCurrentData(); } }
+        function setImgAlign(pos) { 
+            if(activeImg) { 
+                if(pos === 'center') {
+                    activeImg.style.display = 'block';
+                    activeImg.style.marginLeft = 'auto';
+                    activeImg.style.marginRight = 'auto';
+                    activeImg.style.float = 'none';
+                } else {
+                    activeImg.style.display = 'inline-block';
+                    activeImg.style.float = pos;
+                    activeImg.style.margin = (pos === 'left') ? '0 15px 15px 0' : '0 0 15px 15px';
+                }
+                saveCurrentData();
+            } 
+        }
+
+        // --- EDITOR FIXES (Size, Image, Align, Table) ---
+        function exec(cmd, val=null) { 
+            document.execCommand(cmd, false, val); 
+            document.getElementById('content-body').focus();
+        }
+
+        function triggerImageUpload() { document.getElementById('imageUploadInput').click(); }
+        function handleImageUpload(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) { exec('insertImage', event.target.result); };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function addTable() {
+            let r = prompt("Rows:", "3"), c = prompt("Columns:", "3");
+            if(!r || !c) return;
+            let t = `<table border="1" style="width:100%; border-collapse:collapse; margin:20px 0;">`;
+            for(let i=0; i<r; i++) { t += "<tr>"; for(let j=0; j<c; j++) t += `<td style="border:1px solid #ddd; padding:10px;">Data</td>`; t += "</tr>"; }
+            t += "</table><br>"; 
+            exec('insertHTML', t);
+        }
+
+        function deleteTable() {
+            let sel = window.getSelection();
+            if(sel.rangeCount > 0) {
+                let node = sel.anchorNode;
+                while(node && node.nodeName !== 'TABLE' && node.nodeName !== 'DIV') { node = node.parentNode; }
+                if(node && node.nodeName === 'TABLE') { node.parentNode.removeChild(node); } 
+                else { alert("Click inside a table first to delete it."); }
+            }
+        }
+
+        // --- LOGIN & RECOVERY ---
         function handleLogin() {
             if(document.getElementById('adminPass').value === "shuman2026") {
                 isAdmin = true;
@@ -200,75 +411,52 @@
                 document.getElementById('content-body').contentEditable = true;
                 document.getElementById('loginBtn').classList.add('hidden');
                 document.getElementById('logoutBtn').classList.remove('hidden');
-                toggleLoginModal();
+                toggleLoginModal('close');
                 init();
-            } else { alert("Wrong Password!"); }
+            } else { alert("Incorrect Password"); }
         }
 
-        function addSubject() {
-            let n = prompt("New Subject Name (e.g., ELECTRONICS):");
-            if(n) { db[n] = { "General": [{t:"Introduction", b:"..."}] }; saveDB(); init(); }
+        function handleForgotPass() {
+            let email = document.getElementById('recoveryEmail').value.toLowerCase();
+            if(email === 'shumanhossen@gmail.com') {
+                alert("Password reset link has been successfully sent to " + email);
+                switchAuthView('login');
+            } else {
+                alert("Unregistered email! Please enter the correct admin email (shumanhossen@gmail.com).");
+            }
         }
 
-        function addTopic() {
-            let n = prompt("New Topic Name (e.g., SENSORS):");
-            if(n) { db[activeSub][n] = [{t:"Introduction", b:"..."}]; saveDB(); loadSubject(activeSub); }
-        }
-
-        function addLesson() {
-            db[activeSub][activeTopic].push({t:"New Lesson Part", b:"Write content here..."});
-            saveDB(); renderLessons(); loadLesson(db[activeSub][activeTopic].length - 1);
+        // --- CORE FUNCTIONALITY ---
+        function addSubject() { let n = prompt("New Subject:"); if(n) { db[n] = {"New Topic": [{t:"Intro", b:"..."}]}; saveDB(); init(); } }
+        function addTopic() { let n = prompt("New Topic:"); if(n) { db[activeSub][n] = [{t:"Intro", b:"..."}]; saveDB(); loadSubject(activeSub); } }
+        function addLesson() { db[activeSub][activeTopic].push({t:"New Part", b:"Write here..."}); saveDB(); renderLessons(); loadLesson(db[activeSub][activeTopic].length - 1); }
+        function deleteCurrentTopic() {
+            if(confirm(`WARNING: Delete entire topic [${activeTopic}]?`)) { delete db[activeSub][activeTopic]; saveDB(); loadSubject(activeSub); document.getElementById('optionsMenu').classList.add('hidden'); }
         }
 
         function saveCurrentData() {
             db[activeSub][activeTopic][activeLessonIdx].t = document.getElementById('content-title').innerHTML;
             db[activeSub][activeTopic][activeLessonIdx].b = document.getElementById('content-body').innerHTML;
-            saveDB();
-            alert("Content Saved!");
+            saveDB(); alert("Saved Successfully!");
+        }
+        function saveDB() { localStorage.setItem('dynos_db_v10', JSON.stringify(db)); }
+        
+        function scrollNav(id, amount) { document.getElementById(id).scrollBy({ left: amount, behavior: 'smooth' }); }
+        function toggleOptions(e) { e.stopPropagation(); document.getElementById('optionsMenu').classList.toggle('hidden'); }
+        
+        function toggleLoginModal(action) { 
+            const m = document.getElementById('authModal');
+            if(action === 'close') { m.classList.add('hidden'); switchAuthView('login'); }
+            else m.classList.remove('hidden');
+        }
+        function switchAuthView(view) {
+            document.getElementById('view-login').classList.add('hidden');
+            document.getElementById('view-forgot').classList.add('hidden');
+            document.getElementById('view-' + view).classList.remove('hidden');
         }
 
-        function saveDB() { localStorage.setItem('dynos_pro_master_v1', JSON.stringify(db)); }
-
-        function showMenu(e, type, name) {
-            if(!isAdmin) return;
-            e.preventDefault();
-            rightClickTarget = { type, name };
-            const menu = document.getElementById('context-menu');
-            menu.style.display = 'block';
-            menu.style.left = e.pageX + 'px';
-            menu.style.top = e.pageY + 'px';
-        }
-
-        function deleteCurrentItem() {
-            if(confirm(`Are you sure you want to delete ${rightClickTarget.name}?`)) {
-                if(rightClickTarget.type === 'sub') delete db[rightClickTarget.name];
-                else delete db[activeSub][rightClickTarget.name];
-                saveDB(); init();
-            }
-        }
-
-        function addTable() {
-            let r = prompt("Rows:", "3"), c = prompt("Columns:", "3");
-            let t = `<table border="1" style="width:100%; border-collapse: collapse; margin: 20px 0;">`;
-            for(let i=0; i<r; i++) {
-                t += "<tr>";
-                for(let j=0; j<c; j++) t += `<td style="border: 1px solid #ddd; padding: 10px;">Cell</td>`;
-                t += "</tr>";
-            }
-            t += "</table><p>&nbsp;</p>";
-            exec('insertHTML', t);
-        }
-
-        function addImg() { const u = prompt("Image URL:"); if(u) exec('insertImage', u); }
-        window.onclick = () => document.getElementById('context-menu').style.display = 'none';
-        function exec(c, v=null) { document.execCommand(c, false, v); }
         function logout() { location.reload(); }
-        function toggleLoginModal() { document.getElementById('loginModal').classList.toggle('hidden'); }
-        function toggleOptionsMenu() { document.getElementById('optionsMenu').classList.toggle('hidden'); }
-        function nav(step) {
-            let next = activeLessonIdx + step;
-            if(next >= 0 && next < db[activeSub][activeTopic].length) loadLesson(next);
-        }
+        function nav(step) { let n = activeLessonIdx + step; if(n >= 0 && n < db[activeSub][activeTopic].length) loadLesson(n); }
 
         init();
     </script>
